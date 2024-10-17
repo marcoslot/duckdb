@@ -381,7 +381,9 @@ unique_ptr<ColumnReader> ParquetReader::CreateReaderRecursive(ClientContext &con
 			auto struct_reader =
 			    make_uniq<StructColumnReader>(*this, ListType::GetChildType(result_type), s_ele, this_idx,
 			                                  max_define - 1, max_repeat - 1, std::move(child_readers));
-			return make_uniq<ListColumnReader>(*this, result_type, s_ele, this_idx, max_define, max_repeat,
+
+			auto &p_ele = file_meta_data->schema[this_idx - 1];
+			return make_uniq<ListColumnReader>(*this, result_type, p_ele, this_idx, max_define, max_repeat,
 			                                   std::move(struct_reader));
 		}
 		if (child_types.size() > 1 || (!is_list && !is_map && !is_repeated)) {
@@ -395,7 +397,9 @@ unique_ptr<ColumnReader> ParquetReader::CreateReaderRecursive(ClientContext &con
 		}
 		if (is_repeated) {
 			result_type = LogicalType::LIST(result_type);
-			return make_uniq<ListColumnReader>(*this, result_type, s_ele, this_idx, max_define, max_repeat,
+
+			auto &p_ele = file_meta_data->schema[this_idx - 1];
+			return make_uniq<ListColumnReader>(*this, result_type, p_ele, this_idx, max_define, max_repeat,
 			                                   std::move(result));
 		}
 		return result;
